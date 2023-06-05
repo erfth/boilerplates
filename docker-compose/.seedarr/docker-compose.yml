@@ -1,0 +1,120 @@
+---
+version: '3'
+services:
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VPN_SERVICE_PROVIDER=nordvpn
+      - OPENVPN_USER=
+      - OPENVPN_PASSWORD=
+      - SERVER_REGIONS=Netherlands
+    volumes:
+      - ./Configs/Gluetun/config:/gluetun
+    ports:
+      - 9080:9080 #QBitTorrent Web-UI
+      - 6881:6881 #QBitTorrent
+      - 6881:6881/udp #QBitTorrent
+      - 9117:9117 #Jackett
+      - 9696:9696 #Prowlarr
+      - 7878:7878 #Radarr
+      - 8989:8989 #Sonarr
+      #- 5800:5800 #jdwebgui
+      - 3129:3129 #myjd
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+
+  qbittorrent:
+    image: ghcr.io/linuxserver/qbittorrent
+    container_name: qbittorrent
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      - UMASK=022
+      - WEBUI_PORT=9080
+    volumes:
+      - ./Configs/qbittorrent/config:/config
+      - ./Torrents:/downloads
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  jackett:
+    image: ghcr.io/linuxserver/jackett
+    container_name: jackett
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      - AUTO_UPDATE=true #optional
+    volumes:
+      - ./Configs/Jackett/config:/config
+      - ./Torrents:/downloads
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+    volumes:
+      - ./Configs/Prowlarr/config:/config
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  radarr:
+    image: ghcr.io/linuxserver/radarr
+    container_name: radarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+    volumes:
+      - ./Configs/Radarr/config:/config
+      - ./Movies:/movies
+      - ./Torrents:/downloads
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  sonarr:
+    image: ghcr.io/linuxserver/sonarr
+    container_name: sonarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+    volumes:
+      - ./Configs/Sonarr/config:/config
+      - ./TV:/tv
+      - ./Torrents:/downloads
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+    
+   jdownloader-2:
+    image: jlesage/jdownloader-2
+    container_name: jd2
+    network_mode: "service:gluetun"
+    volumes:
+      - /media/ext_remote/ext_od_1/Downloads/:/jdownloader/downloads_1/
+      - /media/ext_remote/ext_od_2/Downloads/:/jdownloader/downloads_2/
+      - /opt/docker/jdownloader2/cfg/:/jdownloader/cfg/
+    environment: 
+      MYJD_USER: email@email.com #optional (see [Identify](https://github.com/jaymoulin/docker-jdownloader#identify))
+      MYJD_PASSWORD: bar #optional (see [Identify](https://github.com/jaymoulin/docker-jdownloader#identify))
+      MYJD_DEVICE_NAME: goofy #optional
