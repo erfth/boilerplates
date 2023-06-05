@@ -1,0 +1,90 @@
+---
+version: '2.4'
+services:
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    environment:
+      - PUID=998
+      - PGID=100
+      - VPNSP=private internet access
+      - REGION=US Houston
+      - OPENVPN_USER=USERNAME #Change to YOUR Username
+      - OPENVPN_PASSWORD=PASSWORD #Change to YOUR Password
+    volumes:
+      - /srv/dev-disk-by-uuid-0d4a201c-b292-412d-ade6-cc5561e54f1f/Configs/Gluetun/Config:/gluetun
+    ports:
+      - 9080:9080 #QBitTorrent Web-UI
+      - 6881:6881 #QBitTorrent
+      - 6881:6881/udp #QBitTorrent
+      - 9117:9117 #Jackett
+      - 7878:7878 #Radarr
+      - 8989:8989 #Sonarr
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+
+  qbittorrent:
+    image: ghcr.io/linuxserver/qbittorrent
+    container_name: qbittorrent
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=998
+      - PGID=100
+      - TZ=America/Denver
+      - UMASK=022
+      - WEBUI_PORT=9080
+    volumes:
+      - /srv/dev-disk-by-uuid-0d4a201c-b292-412d-ade6-cc5561e54f1f/Configs/qbittorrent/config:/config
+      - /srv/dev-disk-by-uuid-0d4a201c-b292-412d-ade6-cc5561e54f1f/Torrents:/downloads
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  jackett:
+    image: ghcr.io/linuxserver/jackett
+    container_name: jackett
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=998
+      - PGID=100
+      - TZ=America/Denver
+      - AUTO_UPDATE=true #optional
+    volumes:
+      - /srv/dev-disk-by-uuid-0d4a201c-b292-412d-ade6-cc5561e54f1f/Configs/Jackett/Config:/config
+      - /srv/dev-disk-by-uuid-0d4a201c-b292-412d-ade6-cc5561e54f1f/Torrents:/downloads
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+  
+  radarr:
+    image: ghcr.io/linuxserver/radarr
+    container_name: radarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=998
+      - PGID=100
+      - TZ=America/Denver
+    volumes:
+      - /srv/dev-disk-by-uuid-0d4a201c-b292-412d-ade6-cc5561e54f1f/Configs/Radarr/config:/config
+      - /srv/dev-disk-by-uuid-0d4a201c-b292-412d-ade6-cc5561e54f1f/Movies:/movies
+      - /srv/dev-disk-by-uuid-0d4a201c-b292-412d-ade6-cc5561e54f1f/Torrents:/downloads
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  sonarr:
+    image: ghcr.io/linuxserver/sonarr
+    container_name: sonarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=998
+      - PGID=100
+      - TZ=America/Denver
+    volumes:
+      - /srv/dev-disk-by-uuid-0d4a201c-b292-412d-ade6-cc5561e54f1f/Configs/Sonarr/config:/config
+      - /srv/dev-disk-by-uuid-0d4a201c-b292-412d-ade6-cc5561e54f1f/TV:/tv
+      - /srv/dev-disk-by-uuid-0d4a201c-b292-412d-ade6-cc5561e54f1f/Torrents:/downloads
+    depends_on:
+      - gluetun
+    restart: unless-stopped
