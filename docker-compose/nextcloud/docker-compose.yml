@@ -1,0 +1,65 @@
+---
+    version: '3.9'
+    
+    services: 
+      nextcloud-app:
+        container_name: ${SERVICE_APP_NAME}
+        image: "${SERVICE_APP_SRC}:${SERVICE_APP_TAG}"
+        restart: always
+        depends_on:
+          - nextcloud-db
+          - nextcloud-redis
+        volumes: 
+           - ${LOCAL_DATA_DIR}:/var/www/html
+        environment:
+          NEXTCLOUD_ADMIN_USER: ${SERVICE_APP_ADMIN_USER}
+          NEXTCLOUD_ADMIN_PASSWORD: ${SERVICE_APP_ADMIN_PASSWORD}
+          MYSQL_PASSWORD: ${SERVICE_DB_MYSQL_PASSWORD}
+          MYSQL_DATABASE: ${SERVICE_DB_MYSQL_DATABASE}
+          MYSQL_USER: ${SERVICE_DB_MYSQL_USER}
+          MYSQL_HOST: ${SERVICE_DB_NAME}
+          REDIS_HOST: ${SERVICE_REDIS_NAME}
+          REDIS_HOST_PASSWORD: ${SERVICE_REDIS_PASSWORD}
+        networks: 
+          - proxy
+    
+      nextcloud-cron:
+        container_name: ${SERVICE_CRON_NAME}
+        image: "${SERVICE_CRON_SRC}"
+        restart: always
+        volumes:
+           - ${LOCAL_DATA_DIR}:/var/www/html
+        entrypoint: /cron.sh
+        depends_on:
+           - nextcloud-db
+           - nextcloud-redis
+        networks:
+          - proxy 
+    
+      nextcloud-db:
+        container_name: ${SERVICE_DB_NAME}
+        image: "${SERVICE_DB_SRC}:${SERVICE_DB_TAG}"
+        restart: always
+        command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+        volumes: 
+          - ${LOCAL_DB_DIR}:/var/lib/mysql
+        environment: 
+          MYSQL_ROOT_PASSWORD: ${SERVICE_DB_MYSQL_ROOT_PASSWORD}
+          MYSQL_PASSWORD: ${SERVICE_DB_MYSQL_PASSWORD}
+          MYSQL_DATABASE: ${SERVICE_DB_MYSQL_DATABASE}
+          MYSQL_USER: ${SERVICE_DB_MYSQL_USER}
+          MYSQL_INITDB_SKIP_TZINFO: "${SERVICE_DB_MYSQL_INITDB_SKIP_TZINFO}" 
+        networks: 
+          - proxy
+      nextcloud-redis:
+       container_name: ${SERVICE_REDIS_NAME}
+       image: ${SERVICE_REDIS_SRC}:${SERVICE_REDIS_TAG}
+       restart: always
+       hostname: ${SERVICE_REDIS_NAME}
+       command: redis-server --requirepass ${SERVICE_REDIS_PASSWORD}
+       networks:
+          -  proxy
+    
+    networks:
+       proxy:
+        name: proxy
