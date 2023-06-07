@@ -20,6 +20,9 @@
           MYSQL_HOST: ${SERVICE_DB_NAME}
           REDIS_HOST: ${SERVICE_REDIS_NAME}
           REDIS_HOST_PASSWORD: ${SERVICE_REDIS_PASSWORD}
+          OVERWRITEPROTOCOL: https
+          OVERWRITECLIURL: https://nextcloud.euredomain.de
+          OVERWRITEHOST: nextcloud.euredomain.de
         networks: 
           - proxy
     
