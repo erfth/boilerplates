@@ -28,5 +28,5 @@ NOTE: You should run the above command in a directory with the docker-compose.ym
 
 ## More configuration options
 
-Please visit [https://rclone.org/drive/](https://manual.seafile.com) to get deep and detailed explanation for all configuration.
+Please visit [https://manual.seafile.com](https://manual.seafile.com) to get deep and detailed explanation for all configuration.
 
