@@ -1,0 +1,51 @@
+version: "3"
+services:
+
+wikijs-cron:
+        container_name: ${SERVICE_CRON_NAME}
+        image: "${SERVICE_CRON_SRC}"
+        restart: always
+        volumes:
+           - ${LOCAL_DATA_DIR}:/var/www/html
+        entrypoint: /cron.sh
+        depends_on:
+           - wikijs-db
+        networks:
+          - wikijs-network 
+    
+wikijs-db:
+        container_name: ${SERVICE_DB_NAME}
+        image: "${SERVICE_DB_SRC}:${SERVICE_DB_TAG}"
+        restart: always
+        command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+        volumes: 
+          - ${LOCAL_DB_DIR}:/var/lib/mysql
+        environment: 
+          MYSQL_ROOT_PASSWORD: ${SERVICE_DB_MYSQL_ROOT_PASSWORD}
+          MYSQL_PASSWORD: ${SERVICE_DB_MYSQL_PASSWORD}
+          MYSQL_DATABASE: ${SERVICE_DB_MYSQL_DATABASE}
+          MYSQL_USER: ${SERVICE_DB_MYSQL_USER}
+          MYSQL_INITDB_SKIP_TZINFO: "${SERVICE_DB_MYSQL_INITDB_SKIP_TZINFO}" 
+        networks: 
+          - wikijs-network
+    
+    networks:
+       proxy:
+        name: wikijs-network
+wiki-app:
+    image: ghcr.io/requarks/wiki:2
+    depends_on:
+      - db
+    environment:
+      DB_TYPE: mysql
+      DB_HOST: ${SERVICE_DB_NAME}
+      DB_PORT: 5432
+      DB_USER: ${SERVICE_DB_MYSQL_USER}
+      DB_PASS: ${SERVICE_DB_MYSQL_PASSWORD}
+      DB_NAME: ${SERVICE_DB_MYSQL_DATABASE}
+    restart: unless-stopped
+    ports:
+      - "80:3000"
+
+volumes:
+  db-data:
