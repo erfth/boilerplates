@@ -1,29 +1,35 @@
-Install docker-compose¶
+## Install docker-compose
 Seafile v7.x.x (or newer versions) image uses docker-compose. You should install the docker-compose command.
 
-# for CentOS
+for CentOS
+```
 yum install docker-compose -y
-
-# for Ubuntu
+```
+for Ubuntu
+```
 apt-get install docker-compose -y
-Download and modify docker-compose.yml¶
+````
+## Download and modify docker-compose.yml
 Download docker-compose.yml sample file to your host. Then modify the file according to your environment. The following fields are needed to be modified:
 
-The password of MySQL root (MYSQL_ROOT_PASSWORD and DB_ROOT_PASSWD)
-The volume directory of MySQL data (volumes)
-The volume directory of Seafile data (volumes).
-Start Seafile server¶
-Start Seafile server with the following command
+*The password of MySQL root (MYSQL_ROOT_PASSWORD and DB_ROOT_PASSWD)
+*The volume directory of MySQL data (volumes)
+*The volume directory of Seafile data (volumes).
 
+## Start Seafile server
+Start Seafile server with the following command
+```
 docker-compose up -d
+```
+
 Wait for a few minutes for the first time initialization, then visit http://seafile.example.com to open Seafile Web UI.
 
 NOTE: You should run the above command in a directory with the docker-compose.yml.
 
-More configuration options¶
-Custom admin username and password¶
+## More configuration options
+### Custom admin username and password
 The default admin account is me@example.com and the password is asecret. You can use a different password by setting the container's environment variables in the docker-compose.yml: e.g.
-
+```
 seafile:
     ...
 
@@ -32,11 +38,12 @@ seafile:
         - SEAFILE_ADMIN_EMAIL=me@example.com
         - SEAFILE_ADMIN_PASSWORD=a_very_secret_password
         ...
-Let's encrypt SSL certificate¶
-If you set SEAFILE_SERVER_LETSENCRYPT to true, the container would request a letsencrypt-signed SSL certificate for you automatically.
+```
+## Let's encrypt SSL certificate
+If you set ```SEAFILE_SERVER_LETSENCRYPT``` to ```true```, the container would request a letsencrypt-signed SSL certificate for you automatically.
 
 e.g.
-
+```
 seafile:
     ...
     ports:
@@ -48,9 +55,10 @@ seafile:
         - SEAFILE_SERVER_LETSENCRYPT=true
         - SEAFILE_SERVER_HOSTNAME=docs.seafile.com
         ...
-If you want to use your own SSL certificate and the volume directory of Seafile data is /opt/seafile-data:
+```        
+If you want to use your own SSL certificate and the volume directory of Seafile data is ```/opt/seafile-data```:
 
-create a folder /opt/seafile-data/ssl, and put your certificate and private key under the ssl directory.
+*create a folder ```/opt/seafile-data/ssl```, and put your certificate and private key under the ssl directory.
 Assume your site name is seafile.example.com, then your certificate must have the name seafile.example.com.crt, and the private key must have the name seafile.example.com.key.
 If you got the following error when SEAFILE_SERVER_LETSENCRYPT=true is set:
 
