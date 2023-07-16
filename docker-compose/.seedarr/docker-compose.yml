@@ -1,30 +1,33 @@
-version: '3.9'
+---
+version: '3'
 services:
-    gluetun:
-        image: qmcgaw/gluetun
-        container_name: gluetun
-        environment:
-            - PUID=1000
-            - PGID=1000
-            - VPN_SERVICE_PROVIDER=nordvpn
-            - OPENVPN_USER=
-            - OPENVPN_PASSWORD=
-            - SERVER_REGIONS=Netherlands
-        volumes:
-            - ./configs/gluetun/config:/gluetun
-        ports:
-            - 3129:3129 #myjd
-        cap_add:
-            - NET_ADMIN
-        restart: unless-stopped
-    
-    jdownloader2-headless:
-        network_mode: "service:gluetun"
-        image: plusminus/jdownloader2-headless
-        volumes:
-            - "/mnt/onedrive/:/jdownloader/downloads/"
-            - "./configs/downloader2/config/:/jdownloader/cfg/"
-        environment:
-            - PASSWORD=
-            - EMAIL=
-        container_name: jd2
+  jdownloader-2:
+    image: jlesage/jdownloader-2
+    container_name: jd2
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - /opt/docker/config/jdownloader-2:/config
+      - /opt/5TB/Downloads:/downloads
+    restart: unless-stopped
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VPN_SERVICE_PROVIDER=nordvpn
+      - OPENVPN_USER=
+      - OPENVPN_PASSWORD=
+      - SERVER_COUNTRIES=Netherlands
+      - SERVER_REGIONS=Europe
+    volumes:
+      - /opt/docker/config/gluetun:/gluetun
+    ports:
+      - 5800:5800 # Webinterface
+      - 3129:3129 # MYJD
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
