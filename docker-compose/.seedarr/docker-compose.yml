@@ -8,6 +8,10 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/London
+      - MYJDOWNLOADER_EMAIL=
+      - MYJDOWNLOADER_PASSWORD=
+      - MYJDOWNLOADER_DEVICE_NAME=
+      - JDOWNLOADER_HEADLESS=
     volumes:
       - /opt/docker/config/jdownloader-2:/config
       - /opt/5TB/Downloads:/downloads
