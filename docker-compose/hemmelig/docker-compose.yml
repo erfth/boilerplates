@@ -1,0 +1,10 @@
+version: '3.9'
+services:
+    hemmelig:
+        image: 'hemmeligapp/hemmelig:v5.0.0'
+        volumes:
+            - './database/:/home/node/hemmelig/database/'
+            - './data/hemmelig/:/var/tmp/hemmelig/upload/files'
+        container_name: hemmelig
+        ports:
+            - '3000:3000'
